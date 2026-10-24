@@ -1,0 +1,104 @@
+# Family Hub v1: responsive Home Assistant dashboard for iPad and a future wall display.
+#
+# IMPORTANT: These entity IDs are EXAMPLES. Before using the dashboard, replace
+# them with entities from your own Home Assistant instance:
+#   calendar.family           Google Calendar or another calendar entity
+#   weather.forecast_home     Your weather integration
+#   climate.living_room       Your Nest thermostat (if you own one)
+#   camera.front_door_live_view   Ring live-view camera (device dependent)
+#   todo.family_tasks         A Local To-do list you create for reminders/chores
+#   todo.shopping_list        Home Assistant's default Shopping list, if enabled
+#
+# This is Lovelace DASHBOARD YAML (not configuration.yaml).
+# See family-hub/README.md for setup and privacy guidance.
+title: Family Hub
+views:
+  - title: Family
+    path: family
+    icon: mdi:calendar-month
+    type: sections
+    max_columns: 3
+    sections:
+      # On a large wall display this spans two columns; on iPad it reflows.
+      - type: grid
+        column_span: 2
+        cards:
+          - type: custom:daylight-calendar-card
+            title: Family Calendar
+            entities:
+              - calendar.family
+            default_view: week-compact
+            first_day_of_week: 0
+            shorten_event_times: true
+            past_event_mode: muted
+            grid_options:
+              columns: full
+          - type: todo-list
+            entity: todo.family_tasks
+            title: Reminders & Chores
+            hide_completed: true
+            grid_options:
+              columns: 12
+          - type: todo-list
+            entity: todo.shopping_list
+            title: Grocery List
+            hide_completed: true
+            grid_options:
+              columns: 12
+      - type: grid
+        cards:
+          - type: weather-forecast
+            entity: weather.forecast_home
+            show_current: true
+            show_forecast: true
+            forecast_type: daily
+          - type: thermostat
+            entity: climate.living_room
+          # Ring camera thumbnails are safer than autoplaying cloud video 24/7.
+          # Tapping opens the Home Assistant camera details/live view if available.
+          - type: picture-entity
+            entity: camera.front_door_live_view
+            name: Ring Camera
+            camera_view: auto
+            show_state: false
+            tap_action:
+              action: more-info
+
+  - title: Security
+    path: security
+    icon: mdi:cctv
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: picture-entity
+            entity: camera.front_door_live_view
+            name: Ring Camera
+            camera_view: auto
+            show_state: false
+            tap_action:
+              action: more-info
+          # Add more picture-entity cards here after you confirm their entity IDs.
+
+  - title: Home
+    path: home
+    icon: mdi:home-thermometer
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: thermostat
+            entity: climate.living_room
+          - type: weather-forecast
+            entity: weather.forecast_home
+            show_current: true
+            show_forecast: true
+            forecast_type: daily
+      - type: grid
+        cards:
+          - type: todo-list
+            entity: todo.family_tasks
+            title: Family Reminders
+            hide_completed: true
