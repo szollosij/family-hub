@@ -1,104 +1,237 @@
-# Family Hub v1: responsive Home Assistant dashboard for iPad and a future wall display.
+# Family Hub v2 — warm, iPad-first Sections dashboard.
+# Entire file is Lovelace dashboard YAML (not configuration.yaml).
+# Replace the example entity IDs below once your integrations are connected:
+# calendar.family | weather.forecast_home | todo.family_tasks |
+# todo.shopping_list | climate.living_room | camera.front_door_live_view
 #
-# IMPORTANT: These entity IDs are EXAMPLES. Before using the dashboard, replace
-# them with entities from your own Home Assistant instance:
-#   calendar.family           Google Calendar or another calendar entity
-#   weather.forecast_home     Your weather integration
-#   climate.living_room       Your Nest thermostat (if you own one)
-#   camera.front_door_live_view   Ring live-view camera (device dependent)
-#   todo.family_tasks         A Local To-do list you create for reminders/chores
-#   todo.shopping_list        Home Assistant's default Shopping list, if enabled
-#
-# This is Lovelace DASHBOARD YAML (not configuration.yaml).
-# See family-hub/README.md for setup and privacy guidance.
+# Missing optional devices are hidden outside dashboard edit mode, and the
+# sidebar shows readable setup prompts instead of broken cards.
 title: Family Hub
 views:
-  - title: Family
+  - title: Calendar
     path: family
-    icon: mdi:calendar-month
+    icon: mdi:calendar-month-outline
     type: sections
     max_columns: 3
+    header:
+      layout: responsive
+      card:
+        type: markdown
+        text_only: true
+        content: |
+          # Family Hub
+
+          {{ now().strftime('%A, %B %-d') }}
     sections:
-      # On a large wall display this spans two columns; on iPad it reflows.
       - type: grid
         column_span: 2
         cards:
+          - type: heading
+            heading: Our calendar
+            icon: mdi:calendar-heart
           - type: custom:daylight-calendar-card
-            title: Family Calendar
+            title: ""
             entities:
               - calendar.family
-            default_view: week-compact
+            default_view: month
             first_day_of_week: 0
-            shorten_event_times: true
+            color_scheme: light
+            preference_storage_key: family_hub_main_calendar
             past_event_mode: muted
+            shorten_event_times: true
+            show_all_events_month: false
             grid_options:
               columns: full
-          - type: todo-list
-            entity: todo.family_tasks
-            title: Reminders & Chores
-            hide_completed: true
-            grid_options:
-              columns: 12
-          - type: todo-list
-            entity: todo.shopping_list
-            title: Grocery List
-            hide_completed: true
-            grid_options:
-              columns: 12
       - type: grid
+        background:
+          color: "#E8F0EA"
+          opacity: 12
         cards:
-          - type: weather-forecast
-            entity: weather.forecast_home
-            show_current: true
-            show_forecast: true
-            forecast_type: daily
-          - type: thermostat
-            entity: climate.living_room
-          # Ring camera thumbnails are safer than autoplaying cloud video 24/7.
-          # Tapping opens the Home Assistant camera details/live view if available.
-          - type: picture-entity
-            entity: camera.front_door_live_view
-            name: Ring Camera
-            camera_view: auto
-            show_state: false
-            tap_action:
-              action: more-info
+          - type: heading
+            heading: At a glance
+            icon: mdi:home-heart-outline
+          - type: conditional
+            conditions:
+              - condition: template
+                value_template: "{{ has_value('weather.forecast_home') }}"
+            card:
+              type: weather-forecast
+              entity: weather.forecast_home
+              name: Local weather
+              show_current: true
+              show_forecast: true
+              forecast_type: daily
+            grid_options:
+              columns: full
+          - type: conditional
+            conditions:
+              - condition: template
+                value_template: "{{ not has_value('weather.forecast_home') }}"
+            card:
+              type: markdown
+              title: Weather
+              content: |
+                🌤️ **Today's forecast**
+
+                Connect a weather provider and update the entity ID to show your local forecast.
+            grid_options:
+              columns: full
+          - type: conditional
+            conditions:
+              - condition: template
+                value_template: "{{ has_value('todo.family_tasks') }}"
+            card:
+              type: todo-list
+              entity: todo.family_tasks
+              title: Reminders & chores
+              hide_completed: true
+              hide_section_headers: true
+            grid_options:
+              columns: full
+          - type: conditional
+            conditions:
+              - condition: template
+                value_template: "{{ not has_value('todo.family_tasks') }}"
+            card:
+              type: markdown
+              title: Reminders & chores
+              content: |
+                ✓ Add a **Local To-do** list called *Family Tasks* to check off reminders here.
+            grid_options:
+              columns: full
+          - type: conditional
+            conditions:
+              - condition: template
+                value_template: "{{ has_value('todo.shopping_list') }}"
+            card:
+              type: todo-list
+              entity: todo.shopping_list
+              title: Groceries
+              hide_completed: true
+              hide_section_headers: true
+            grid_options:
+              columns: full
+          - type: conditional
+            conditions:
+              - condition: template
+                value_template: "{{ has_value('climate.living_room') }}"
+            card:
+              type: tile
+              entity: climate.living_room
+              name: Nest · Living room
+            grid_options:
+              columns: full
 
   - title: Security
     path: security
     icon: mdi:cctv
     type: sections
     max_columns: 2
+    header:
+      card:
+        type: markdown
+        text_only: true
+        content: |
+          # Security
+
+          Ring cameras and entry notifications
     sections:
       - type: grid
         cards:
-          - type: picture-entity
-            entity: camera.front_door_live_view
-            name: Ring Camera
-            camera_view: auto
-            show_state: false
-            tap_action:
-              action: more-info
-          # Add more picture-entity cards here after you confirm their entity IDs.
+          - type: heading
+            heading: Cameras
+            icon: mdi:video-outline
+          - type: conditional
+            conditions:
+              - condition: template
+                value_template: "{{ has_value('camera.front_door_live_view') }}"
+            card:
+              type: picture-entity
+              entity: camera.front_door_live_view
+              name: Front door
+              camera_view: auto
+              show_state: false
+              tap_action:
+                action: more-info
+            grid_options:
+              columns: full
+          - type: conditional
+            conditions:
+              - condition: template
+                value_template: "{{ not has_value('camera.front_door_live_view') }}"
+            card:
+              type: markdown
+              title: Ring camera
+              content: |
+                📷 Connect Ring in **Settings → Devices & services**, then replace the sample camera entity ID.
+
+                Live view depends on the supported Ring model and account features.
+            grid_options:
+              columns: full
 
   - title: Home
     path: home
-    icon: mdi:home-thermometer
+    icon: mdi:home-outline
     type: sections
     max_columns: 2
+    header:
+      card:
+        type: markdown
+        text_only: true
+        content: |
+          # Home
+
+          Comfort and everyday essentials
     sections:
       - type: grid
         cards:
-          - type: thermostat
-            entity: climate.living_room
-          - type: weather-forecast
-            entity: weather.forecast_home
-            show_current: true
-            show_forecast: true
-            forecast_type: daily
+          - type: heading
+            heading: Comfort
+            icon: mdi:thermometer
+          - type: conditional
+            conditions:
+              - condition: template
+                value_template: "{{ has_value('climate.living_room') }}"
+            card:
+              type: thermostat
+              entity: climate.living_room
+            grid_options:
+              columns: full
+          - type: conditional
+            conditions:
+              - condition: template
+                value_template: "{{ not has_value('climate.living_room') }}"
+            card:
+              type: markdown
+              title: Nest
+              content: |
+                🌡️ Connect your supported Nest thermostat and update the climate entity ID.
+            grid_options:
+              columns: full
       - type: grid
         cards:
-          - type: todo-list
-            entity: todo.family_tasks
-            title: Family Reminders
-            hide_completed: true
+          - type: heading
+            heading: Family lists
+            icon: mdi:format-list-checks
+          - type: conditional
+            conditions:
+              - condition: template
+                value_template: "{{ has_value('todo.family_tasks') }}"
+            card:
+              type: todo-list
+              entity: todo.family_tasks
+              title: Family reminders
+              hide_completed: true
+            grid_options:
+              columns: full
+          - type: conditional
+            conditions:
+              - condition: template
+                value_template: "{{ has_value('todo.shopping_list') }}"
+            card:
+              type: todo-list
+              entity: todo.shopping_list
+              title: Groceries
+              hide_completed: true
+            grid_options:
+              columns: full
