@@ -12,6 +12,32 @@ A calmer, Skylight-inspired Home Assistant dashboard: **calendar first, helpful 
 
 The color palette is warm ivory (`#F8F7F3`), sage (`#E8F0EA`), charcoal green (`#263C37`) and muted blue. Standard Home Assistant cards still inherit the active HA theme. For closer control, an **optional** `theme.yaml` is provided.
 
+## Calendar palette (important)
+
+The default Daylight Calendar Card header uses Home Assistant's `--primary-color`, which may be bright cyan even when the surrounding dashboard is light. Our dashboard **overrides this directly** in the card configuration:
+
+```yaml
+header_color: "#ECF1EB"      # muted sage header
+header_text_color: "#263C37" # charcoal text/buttons
+header_background_opacity: 0
+grid_color: "#E4EAE3"
+colors:
+  calendar.family: "#7DA48D" # family event chips
+event_color_mode: left-tint
+event_tint_opacity: 24
+today_style:
+  background_color: "#DCEAE3"
+  opacity: 0.55
+  border_color: "#7FA58D"
+  border_width: 1
+```
+
+**Pulling code on GitHub does not update the running dashboard.** After any change to `dashboard.yaml`, copy the latest file into Home Assistant's **dashboard-level** Raw configuration editor again and save. If you just want the color fix, open the existing Daylight card code editor and add those appearance keys without replacing its current calendar entity.
+
+The Home Assistant application header (dark slate in the setup screenshot) is separate. To make that background warm too, install and select the optional `theme.yaml` explained below.
+
+**Yellow `Entity not found` warnings** while editing represent not-yet-configured optional Nest, Ring, and to-do entities. Home Assistant shows conditional cards in edit mode even when their conditions normally hide them; click **Done** to see the normal view. Once you connect a service, replace its example entity ID with its real ID.
+
 ## Install into the Family Hub dashboard you already created
 
 1. **Install the original Daylight Calendar Card in HACS** (already done during setup). Hard-refresh the browser after installation.
