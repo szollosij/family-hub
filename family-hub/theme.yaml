@@ -1,0 +1,14 @@
+# Optional Home Assistant theme: place as themes/family_hub.yaml in your HA config.
+Family Hub Warm:
+  primary-color: "#648879"
+  accent-color: "#8FAE9F"
+  primary-background-color: "#F8F7F3"
+  secondary-background-color: "#EFF3EE"
+  card-background-color: "#FFFFFF"
+  ha-card-background: "#FFFFFF"
+  ha-card-border-radius: "18px"
+  ha-card-box-shadow: "0 3px 14px rgba(38, 60, 55, 0.06)"
+  primary-text-color: "#263C37"
+  secondary-text-color: "#6B7771"
+  app-header-background-color: "#F8F7F3"
+  app-header-text-color: "#263C37"
