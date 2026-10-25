@@ -1,69 +1,66 @@
-# Family Hub — iPad-first Home Assistant dashboard
+# Family Hub — iPad-first dashboard
 
-This folder is the start of a **personal family command center** built around the Daylight Calendar Card already in this repository. It is meant to run in Home Assistant on a 9th-generation iPad today, then on a larger Raspberry Pi-connected touchscreen later **without rewriting the dashboard**.
+A calmer, Skylight-inspired Home Assistant dashboard: **calendar first, helpful information second**. This configuration builds on the Daylight Calendar Card in this repository without modifying its JavaScript. Your 9th-gen iPad displays the dashboard today; a larger touchscreen can open the same dashboard later.
 
-The calendar card itself remains untouched. We compose it with Home Assistant's built-in weather, to-do, thermostat and camera cards. The configuration uses a responsive Sections view: the calendar spans two sections on larger screens, and the layout stacks as space gets tighter.
+## Design
 
-## What is included
+- **Calendar:** an uncluttered light monthly calendar takes two of three columns on larger screens.
+- **At a glance:** a soft sage-tinted rail with weather, reminders, groceries and an optional Nest summary.
+- **Security:** Ring camera view is isolated from the everyday calendar.
+- **Home:** thermostat and family lists.
+- **Responsive:** Home Assistant's Sections layout reflows the cards on smaller screens. On the iPad, use landscape and collapse the navigation sidebar to give the calendar more room.
 
-- `dashboard.yaml` — a complete three-view Lovelace dashboard: **Family**, **Security**, and **Home**.
-- Week-at-a-glance family calendar, interactive chores/reminders and grocery lists.
-- Daily weather, Nest thermostat placeholder and Ring camera placeholder.
-- iPad/iPhone compatibility through the Home Assistant companion app or a browser; same URL on a future Pi kiosk.
+The color palette is warm ivory (`#F8F7F3`), sage (`#E8F0EA`), charcoal green (`#263C37`) and muted blue. Standard Home Assistant cards still inherit the active HA theme. For closer control, an **optional** `theme.yaml` is provided.
 
-**This is a configuration scaffold, not a finished live installation.** Device and entity IDs are examples and must be replaced in your own Home Assistant instance. The project does not contain account credentials, and this commit does not connect to Ring, Google, or Nest.
+## Install into the Family Hub dashboard you already created
 
-## Before you start
+1. **Install the original Daylight Calendar Card in HACS** (already done during setup). Hard-refresh the browser after installation.
+2. Open **Family Hub** in Home Assistant and select the dashboard's edit pencil.
+3. Open the top-right **⋮ menu → Raw configuration editor**. On some versions, the raw editor option is under the edit menu.
+4. Copy the complete contents of [dashboard.yaml](dashboard.yaml) and paste it into the **dashboard-level** raw configuration editor, replacing the existing Family Hub YAML. **Don't paste the whole file into a Tile card's code editor.**
+5. Save and exit edit mode. The old HACS update-status tile on the current Family Hub view will be replaced by the new layout. Your separate **Overview** dashboard is not affected.
+6. Confirm that your actual calendar entity is `calendar.family`. Find the exact ID by opening **Developer Tools → States**, filtering for `calendar.`, then updating the `entities` list if necessary.
 
-1. Run **Home Assistant** on an always-on machine (Pi, mini PC, NAS or VM). The iPad is only the display, not the server. Do not buy a 27-inch monitor for this first phase.
-2. Install **Daylight Calendar Card** through HACS or as a manual JavaScript resource (see the repo's original [README](../README.md)). Its registered card type is `custom:daylight-calendar-card`. Don't load both the upstream and forked JS resources at once.
-3. In **Settings → Devices & services**, set up the integrations you actually use:
-   - Google Calendar (or another calendar integration) for your calendar entities.
-   - A weather provider with a `weather.*` entity.
-   - Ring for supported camera/event entities. The cloud-based integration has device- and subscription-dependent limitations.
-   - Nest **only if you have a supported Nest thermostat**. Google Device Access setup may require a fee.
-   - **Local To-do** (or any to-do integration) for a new `Family Tasks` list; Home Assistant's Shopping List usually provides `todo.shopping_list`.
-4. In **Developer Tools → States**, locate the actual `calendar.*`, `todo.*`, `weather.*`, `climate.*` and `camera.*` entity IDs. Replace the example IDs in `dashboard.yaml`. Remove any card for a device you don't own.
+The entire [dashboard.yaml](dashboard.yaml) is designed to be copied directly into the raw editor. It is **not** `configuration.yaml`.
 
-## Use it on your iPad
+## Connect features as you go
 
-**Option A — easiest for a first test (storage-managed dashboard):**
+These sample IDs are placeholders. Find the real ones in Developer Tools → States and update the YAML.
 
-1. In Home Assistant, create a new empty dashboard called **Family Hub**.
-2. Open that dashboard, edit it, open the **Raw configuration editor** from the dashboard's menu, and paste the contents of [dashboard.yaml](dashboard.yaml).
-3. Save. Visit the dashboard in the Home Assistant iPad app or Safari, then switch the iPad to landscape orientation.
-4. Use the iOS app's kiosk/full-screen options as desired. Keep the iPad charging safely for permanent wall use.
+| Feature | Example entity | Needed |
+|---|---|---|
+| Family calendar | `calendar.family` | Yes, replace if yours differs |
+| Weather | `weather.forecast_home` | Optional |
+| Reminders and chores | `todo.family_tasks` | Optional |
+| Groceries | `todo.shopping_list` | Optional |
+| Nest thermostat | `climate.living_room` | Optional, if you own a thermostat |
+| Ring live-view camera | `camera.front_door_live_view` | Optional, device-specific |
 
-**Option B — configuration as code (YAML-mode dashboard):**
+**Optional cards automatically hide** in normal dashboard view until their example entity has a usable state. Weather, reminders, Ring and Nest have friendly explanatory placeholders. Home Assistant shows conditional cards **even when hidden** during dashboard edit mode; leave edit mode to see the clean design.
 
-Copy this folder to your Home Assistant config directory, so the dashboard is located at `<config>/family-hub/dashboard.yaml`. Add a new YAML-mode dashboard to `configuration.yaml`:
+To enable reminders, create a `Family Tasks` list using Home Assistant's **Local To-do** integration. For weather, add a weather integration and update its entity. Your Ring live view is on demand; Home Assistant may not support continuous streaming for your device. Nest setup is separate and may require Google's one-time Device Access registration.
 
-```yaml
-lovelace:
-  dashboards:
-    family-hub:
-      mode: yaml
-      title: Family Hub
-      icon: mdi:tablet-dashboard
-      show_in_sidebar: true
-      filename: family-hub/dashboard.yaml
+## Optional sage + ivory theme
+
+If you want the whole Home Assistant interface to follow the design palette (not only our lightly tinted section), copy [theme.yaml](theme.yaml) to:
+
+```
+<HA-config>/themes/family_hub.yaml
 ```
 
-If you already have a `lovelace:` section, **merge** these keys into it rather than defining another one. Check configuration and restart Home Assistant as appropriate for a YAML dashboard update. Don't copy the full `dashboard.yaml` under `configuration.yaml` directly.
+In `configuration.yaml` under the existing `frontend:` block, enable themes (if not already enabled):
 
-## Ring and Nest caveats
+```yaml
+frontend:
+  themes: !include_dir_merge_named themes
+```
 
-- The included Ring camera card uses `camera_view: auto` to avoid maintaining a continuous cloud stream. Tapping the camera opens Home Assistant's camera details; whether live view works depends on the model and integration. Replace the sample `camera.front_door_live_view` with your actual Ring camera entity.
-- Ring is cloud-dependent and two-way audio in Home Assistant's live view is not supported by the official integration. Recordings can require Ring Protect.
-- Nest climate controls require a compatible thermostat and the Nest integration to be configured. If you have Nest devices but **no thermostat**, remove the `thermostat` cards until we know which entities you have.
-- **Do not commit** private camera URLs, long-lived Home Assistant tokens, passwords, Ring credentials, Google OAuth secrets or `secrets.yaml` to this repository. Its GitHub visibility may be public. Keep those values in Home Assistant.
+Restart Home Assistant and select **Family Hub Warm** from your Home Assistant profile's theme setting. Do not make duplicate `frontend:` blocks.
 
-## Future development
+This is optional; start without the theme first to keep setup simple.
 
-- Confirm the specific Ring devices, available Nest devices, and real Home Assistant entity IDs.
-- Tune the calendar/card proportions after viewing the layout on the iPad.
-- Add doorbell-triggered notifications and optional camera popups after event entity and notification target names are known.
-- Add kid-friendly chores, reminders, and meal planning.
-- Switch the same dashboard to a 24–27-inch touchscreen with a Raspberry Pi kiosk browser.
+## Future
 
-Useful references: [Home Assistant Sections](https://www.home-assistant.io/dashboards/sections/), [To-do list card](https://www.home-assistant.io/dashboards/todo-list/), [Ring integration](https://www.home-assistant.io/integrations/ring/), [Nest integration](https://www.home-assistant.io/integrations/nest/).
+When you move to a 24–27-inch touch display, run a fullscreen browser on the Raspberry Pi pointing at Home Assistant. The dashboard remains on your Home Assistant server and does not need rewriting.
+
+**Privacy:** Never commit Ring credentials, camera private URLs, Google OAuth secrets, Home Assistant access tokens or `secrets.yaml` here. Your GitHub repository is public unless you make it private.
