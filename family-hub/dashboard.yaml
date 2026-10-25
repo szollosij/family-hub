@@ -1,7 +1,7 @@
 # Family Hub v2 — warm, iPad-first Sections dashboard.
 # Entire file is Lovelace dashboard YAML (not configuration.yaml).
 # Replace the example entity IDs below once your integrations are connected:
-# calendar.family | weather.forecast_home | todo.family_tasks |
+# calendar.joey | calendar.brianna | calendar.cooper | weather.forecast_home | todo.family_tasks |
 # todo.shopping_list | climate.living_room | camera.front_door_live_view
 #
 # Missing optional devices are hidden outside dashboard edit mode, and the
@@ -32,7 +32,17 @@ views:
           - type: custom:daylight-calendar-card
             title: ""
             entities:
-              - calendar.family
+              - calendar.joey
+              - calendar.brianna
+              - calendar.cooper
+            calendar_names:
+              calendar.joey: Joey
+              calendar.brianna: Brianna
+              calendar.cooper: Cooper
+            calendar_badge_icons:
+              calendar.joey: mdi:account
+              calendar.brianna: mdi:account
+              calendar.cooper: mdi:school
             default_view: month
             first_day_of_week: 0
             color_scheme: light
@@ -48,7 +58,9 @@ views:
               border_color: "#7FA58D"
               border_width: 1
             colors:
-              calendar.family: "#7DA48D"
+              calendar.joey: "#789EAE"
+              calendar.brianna: "#B88596"
+              calendar.cooper: "#C39B51"
             event_color_mode: left-tint
             event_tint_opacity: 24
             event_color_bar_width: 6
